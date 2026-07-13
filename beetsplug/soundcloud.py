@@ -21,10 +21,8 @@ import re
 import time
 from typing import TYPE_CHECKING, ClassVar
 
-import requests
-
 import beets.ui
-from beets import config
+import requests
 from beets.autotag import AlbumInfo, TrackInfo
 from beets.dbcore import types
 from beets.metadata_plugins import IDResponse, SearchApiMetadataSourcePlugin
@@ -61,9 +59,7 @@ def _extract_client_id_from_web() -> str | None:
     using a regex. The id changes when SoundCloud deploys a new frontend build.
     """
     try:
-        resp = requests.get(
-            "https://soundcloud.com", headers=_HEADERS, timeout=15
-        )
+        resp = requests.get("https://soundcloud.com", headers=_HEADERS, timeout=15)
         resp.raise_for_status()
     except requests.RequestException:
         return None
@@ -182,6 +178,7 @@ class SoundCloudPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
 
     def _cache_path(self) -> str:
         import confuse
+
         return self.config["client_id_cache"].get(confuse.Filename(in_app_dir=True))
 
     def _load_cached_client_id(self) -> str | None:
@@ -247,6 +244,7 @@ class SoundCloudPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
         self._client_id = None
         try:
             import os
+
             os.remove(self._cache_path())
         except OSError:
             pass
@@ -315,11 +313,15 @@ class SoundCloudPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
             else:
                 self._log.debug(
                     "soundcloud: dropped {!r} — {:.1f}% < min {:.1f}%",
-                    info.title, sim * 100, min_sim * 100,
+                    info.title,
+                    sim * 100,
+                    min_sim * 100,
                 )
         self._log.debug(
             "soundcloud: {} / {} candidates kept (min_similarity={:.0f}%)",
-            len(kept), len(candidates), min_sim * 100,
+            len(kept),
+            len(candidates),
+            min_sim * 100,
         )
         return kept
 
@@ -433,7 +435,9 @@ class SoundCloudPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
             self._log.debug(
                 "soundcloud: query built from tags — "
                 "artist={!r} name={!r} → query={!r}",
-                artist, name, query,
+                artist,
+                name,
+                query,
             )
 
         # Store context so get_search_response can build fallback variants.
@@ -445,7 +449,12 @@ class SoundCloudPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
         """Execute one search request and return the collection list."""
         data = self._get(
             endpoint,
-            {"q": query, "limit": str(limit), "offset": "0", "linked_partitioning": "1"},
+            {
+                "q": query,
+                "limit": str(limit),
+                "offset": "0",
+                "linked_partitioning": "1",
+            },
         )
         if data is None:
             return []
@@ -474,15 +483,23 @@ class SoundCloudPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
         for query in variants:
             self._log.debug(
                 "soundcloud: GET {} q={!r} limit={}",
-                endpoint.split("/")[-1], query, params.limit,
+                endpoint.split("/")[-1],
+                query,
+                params.limit,
             )
             collection = self._do_search(endpoint, query, params.limit)
             if collection:
-                self._log.debug("soundcloud: {} result(s) for q={!r}", len(collection), query)
+                self._log.debug(
+                    "soundcloud: {} result(s) for q={!r}", len(collection), query
+                )
                 for i, t in enumerate(collection[:5], 1):
-                    self._log.debug("  {}. {!r} (id={})", i, t.get("title", "?"), t.get("id"))
+                    self._log.debug(
+                        "  {}. {!r} (id={})", i, t.get("title", "?"), t.get("id")
+                    )
                 return collection
-            self._log.debug("soundcloud: 0 results for q={!r}, trying next variant…", query)
+            self._log.debug(
+                "soundcloud: 0 results for q={!r}, trying next variant…", query
+            )
 
         self._log.debug("soundcloud: all query variants exhausted, no results")
         return []

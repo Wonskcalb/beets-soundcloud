@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 TRACK_DATA = {
     "id": 123456,
     "title": "Some Track",
@@ -44,7 +43,9 @@ def plugin():
     p.data_source = "SoundCloud"
     p._log = MagicMock()
     p.config = MagicMock()
-    p.config.__getitem__ = MagicMock(return_value=MagicMock(get=MagicMock(return_value=None)))
+    p.config.__getitem__ = MagicMock(
+        return_value=MagicMock(get=MagicMock(return_value=None))
+    )
     p._get = MagicMock(return_value=None)
     return p
 
@@ -57,8 +58,10 @@ class TestStripArtistPrefix:
         Then the prefix and separator are removed
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         result = SoundCloudPlugin._strip_artist_prefix(
-            "Test Artist & Test Artist Two - Track Name (Remixer Remix)", "Test Artist & Test Artist Two"
+            "Test Artist & Test Artist Two - Track Name (Remixer Remix)",
+            "Test Artist & Test Artist Two",
         )
         assert result == "Track Name (Remixer Remix)"
 
@@ -69,6 +72,7 @@ class TestStripArtistPrefix:
         Then the prefix is still recognised and removed
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         result = SoundCloudPlugin._strip_artist_prefix(
             "ARTIST NAME - Track Title", "Artist Name"
         )
@@ -81,6 +85,7 @@ class TestStripArtistPrefix:
         Then the title is returned unchanged
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         title = "Other Artist - Track Title"
         result = SoundCloudPlugin._strip_artist_prefix(title, "Test Artist")
         assert result == title
@@ -92,6 +97,7 @@ class TestStripArtistPrefix:
         Then the title is returned unchanged
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         title = "Track Title Without Dash"
         assert SoundCloudPlugin._strip_artist_prefix(title, "Some Artist") == title
 
@@ -102,6 +108,7 @@ class TestStripArtistPrefix:
         Then the title is returned unchanged
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         title = "Artist - Title"
         assert SoundCloudPlugin._strip_artist_prefix(title, "") == title
 
@@ -112,6 +119,7 @@ class TestStripArtistPrefix:
         Then only the first separator is used to split off the prefix
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         result = SoundCloudPlugin._strip_artist_prefix(
             "Test Artist - Track Name - Live", "Test Artist"
         )
@@ -244,7 +252,12 @@ class TestTrackInfo:
         When converting it to TrackInfo
         Then the artist is an empty string
         """
-        data = {**TRACK_DATA, "title": "No Dash", "publisher_metadata": {}, "user": None}
+        data = {
+            **TRACK_DATA,
+            "title": "No Dash",
+            "publisher_metadata": {},
+            "user": None,
+        }
         info = self.p._track_info(data)
         assert info.artist == ""
 
@@ -422,9 +435,12 @@ class TestExtractClientId:
         Then None is returned
         """
         import requests as req
+
         from beetsplug.soundcloud import _extract_client_id_from_web
 
-        with patch("beetsplug.soundcloud.requests.get", side_effect=req.RequestException):
+        with patch(
+            "beetsplug.soundcloud.requests.get", side_effect=req.RequestException
+        ):
             assert _extract_client_id_from_web() is None
 
     def test_returns_none_when_no_match(self):
@@ -435,7 +451,9 @@ class TestExtractClientId:
         """
         from beetsplug.soundcloud import _extract_client_id_from_web
 
-        homepage_html = '<script src="https://a-v2.sndcdn.com/assets/app-abc123.js"></script>'
+        homepage_html = (
+            '<script src="https://a-v2.sndcdn.com/assets/app-abc123.js"></script>'
+        )
         bundle_js = "no client id here"
 
         mock_home = MagicMock(ok=True, text=homepage_html)
@@ -549,6 +567,7 @@ class TestQueryVariants:
         Then the first variant is the full "artist title" combination
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         variants = SoundCloudPlugin._query_variants("Test Artist", "Test Title")
         assert variants[0] == "Test Artist Test Title"
 
@@ -559,10 +578,17 @@ class TestQueryVariants:
         Then a variant with the featured artist stripped appears before the title-only variant
         """
         from beetsplug.soundcloud import SoundCloudPlugin
-        variants = SoundCloudPlugin._query_variants("Primary Artist Feat Featured Artist", "Track Title")
+
+        variants = SoundCloudPlugin._query_variants(
+            "Primary Artist Feat Featured Artist", "Track Title"
+        )
         assert "Primary Artist Track Title" in variants
         # feat variant comes before title-only
-        feat_idx = next(i for i, v in enumerate(variants) if "Primary Artist" in v and "Featured Artist" not in v)
+        feat_idx = next(
+            i
+            for i, v in enumerate(variants)
+            if "Primary Artist" in v and "Featured Artist" not in v
+        )
         title_idx = variants.index("Track Title")
         assert feat_idx < title_idx
 
@@ -573,10 +599,15 @@ class TestQueryVariants:
         Then a variant using only the first artist appears before the title-only variant
         """
         from beetsplug.soundcloud import SoundCloudPlugin
-        variants = SoundCloudPlugin._query_variants("First Artist vs Second Artist", "Track Title")
+
+        variants = SoundCloudPlugin._query_variants(
+            "First Artist vs Second Artist", "Track Title"
+        )
         assert "First Artist Track Title" in variants
         # vs variant before title-only
-        vs_idx = next(i for i, v in enumerate(variants) if v == "First Artist Track Title")
+        vs_idx = next(
+            i for i, v in enumerate(variants) if v == "First Artist Track Title"
+        )
         title_idx = variants.index("Track Title")
         assert vs_idx < title_idx
 
@@ -587,6 +618,7 @@ class TestQueryVariants:
         Then the title-only variant is last
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         variants = SoundCloudPlugin._query_variants("Some Artist", "Track Title")
         assert variants[-1] == "Track Title"
 
@@ -597,6 +629,7 @@ class TestQueryVariants:
         Then no variant is repeated
         """
         from beetsplug.soundcloud import SoundCloudPlugin
+
         variants = SoundCloudPlugin._query_variants("Simple Artist", "Simple Title")
         assert len(variants) == len(set(variants))
 
@@ -607,7 +640,10 @@ class TestQueryVariants:
         Then a variant with the featured artist stripped is produced
         """
         from beetsplug.soundcloud import SoundCloudPlugin
-        variants = SoundCloudPlugin._query_variants("Primary Artist ft. Featured Artist", "Track Title")
+
+        variants = SoundCloudPlugin._query_variants(
+            "Primary Artist ft. Featured Artist", "Track Title"
+        )
         assert "Primary Artist Track Title" in variants
 
 
