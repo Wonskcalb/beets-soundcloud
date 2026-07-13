@@ -1,0 +1,55 @@
+[project]
+name = "beets-soundcloud"
+version = "0.1.0"
+description = "SoundCloud autotagger source for beets"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.13"
+keywords = ["beets", "music", "soundcloud", "tagger", "metadata"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Plugins",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "beets>=2.0",
+    "requests>=2.28",
+    "confuse>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/YOUR_USERNAME/beets-soundcloud"
+Repository = "https://github.com/YOUR_USERNAME/beets-soundcloud"
+Issues = "https://github.com/YOUR_USERNAME/beets-soundcloud/issues"
+Changelog = "https://github.com/YOUR_USERNAME/beets-soundcloud/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# beetsplug is a shared namespace package — do not add __init__.py
+packages = ["beetsplug"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.0",
+    "ruff>=0.4",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
