@@ -1,0 +1,53 @@
+# ============================================================
+# beets config — with beets-soundcloud as a last-resort source
+# Copy the relevant sections into ~/.config/beets/config.yaml
+# ============================================================
+
+plugins:
+  - fromfilename      # extracts artist/title from the filename when tags are empty
+  - acousticbrainz    # if installed
+  - chroma            # audio fingerprint (requires pyacoustid)
+  - beatport4         # if installed
+  - soundcloud        # LAST RESORT — see configuration below
+
+# ------------------------------------------------------------
+# Matching thresholds
+#
+# strong_rec_thresh : max distance to auto-apply without asking
+#   → 0.10 = auto-apply when similarity > 90%
+# medium_rec_thresh : max distance to propose to the user
+#   → 0.25 = propose when similarity is between 75% and 90%
+# Below medium_rec_thresh → automatic skip
+# ------------------------------------------------------------
+match:
+  strong_rec_thresh: 0.10
+  medium_rec_thresh: 0.25
+
+# ------------------------------------------------------------
+# SoundCloud — last-resort source
+#
+# data_source_mismatch_penalty: 0.7
+#   Penalizes SoundCloud candidates by ~7% on the displayed score.
+#   A SoundCloud match at 88% raw → displayed ~81% → always
+#   below the auto-apply threshold (90%) → manual review required.
+#   Official sources (MusicBrainz, Beatport) at 90%+ continue
+#   to auto-apply normally.
+#
+# min_similarity: 0.88
+#   Filters out SoundCloud candidates whose raw score (computed with
+#   beets' track_distance) is below 88%.
+#   Protects against false positives: remixes, covers, live versions
+#   that share a title close to the original.
+# ------------------------------------------------------------
+soundcloud:
+  # Deprioritizes SoundCloud candidates by about 7% on the displayed score.
+  # A SoundCloud match at 90% raw → displayed ~83% → below the
+  # auto-apply threshold (strong_rec_thresh: 0.10) → manual review required.
+  data_source_mismatch_penalty: 0.7
+
+  # Only filters out truly aberrant candidates (< 60% raw).
+  # Don't set this too high: SoundCloud titles often have extra descriptors
+  # ("(NilsOfficial Mashup)", "(Get Knocked Down)") that reduce the score
+  # even when it's the right track.
+  # Protection against auto-apply comes from strong_rec_thresh + penalty.
+  min_similarity: 0.60
