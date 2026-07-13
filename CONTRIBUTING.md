@@ -8,6 +8,7 @@ Thanks for taking the time to contribute!
 git clone https://github.com/YOUR_USERNAME/beets-soundcloud
 cd beets-soundcloud
 uv sync --dev
+uv run pre-commit install
 ```
 
 ## Project structure
@@ -54,7 +55,11 @@ uv run ruff check .
 uv run ruff format .
 ```
 
-Both are enforced in CI.
+Both are enforced in CI. The `pre-commit` hooks installed above run Ruff (and basic whitespace/YAML/TOML checks) automatically on `git commit`; run them on demand with:
+
+```bash
+uv run pre-commit run --all-files
+```
 
 ## Submitting changes
 
