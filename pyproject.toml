@@ -17,7 +17,7 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
-    "beets>=2.0",
+    "beets>=2.13.1",
     "requests>=2.28",
     "confuse>=2.0",
 ]
